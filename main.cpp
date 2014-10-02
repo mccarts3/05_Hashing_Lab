@@ -1,4 +1,8 @@
 #include "hashPrimes.h"
+
+//declare hash() before including "HashTable.h"
+unsigned long hash(std::string k);
+
 #include "HashTable.h"
 #include <string>
 #include <iostream>
@@ -15,7 +19,7 @@
 unsigned long hash(std::string k){
   unsigned long m = hashPrimes[NUM_HASH_PRIMES-2];
   unsigned long ret = 0;
-  for(int i=0;i<k.size();i++){
+  for(unsigned int i=0;i<k.size();i++){
     ret = (256*ret + k[i])%m;
   }
   return ret;
@@ -162,7 +166,7 @@ void testGrow(){
     return;
   }
 
-  for(int j=0; j<=i;j++){
+  for(unsigned int j=0; j<=i;j++){
     std::ostringstream ss;
     ss << j;
     if(!testHash.keyExists(ss.str())){
