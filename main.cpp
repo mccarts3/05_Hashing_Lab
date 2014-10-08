@@ -1,4 +1,4 @@
-#include "hashPrimes.h"
+open#include "hashPrimes.h"
 
 //declare hash() before including "HashTable.h"
 unsigned long hash(std::string k);

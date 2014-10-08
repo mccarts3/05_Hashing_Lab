@@ -97,7 +97,7 @@ HashTable<Key,T>::HashTable(){
 
 template <class Key, class T>
 HashTable<Key,T>::~HashTable() {
-	//TODO
+    delete[] backingArray;
 }
 
 template <class Key, class T>
@@ -110,13 +110,25 @@ void HashTable<Key,T>::add(Key k, T x){
 	if((numItems+numRemoved) >= backingArray/2) {
 		grow();
 	}
+    
+    int index = calcIndex(k);
 
 	//TODO
+    
+    numItems++;
 }
 
 template <class Key, class T>
 void HashTable<Key,T>::remove(Key k){
-	//TODO
+	int index = calcIndex(k);
+    
+    if(numItems == 0) {
+        throw std::string("In remove(), attempted to remove from an empty hash table");
+    }
+    
+    //TODO
+
+    numItems--;
 }
 
 template <class Key, class T>
