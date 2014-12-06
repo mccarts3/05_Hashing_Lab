@@ -69,7 +69,7 @@ private:
 	unsigned long calcIndex(Key k);
 
 	unsigned long numItems; //Number of items in the hash table
-	unsigned long primeCounter;
+	unsigned long primeCounter; //Keeps track of which prime # backingArraySize is
 
 	//Note: Ordinarily, these OUGHT to be private. In this case I have
 	// made them public for easy of testing.
@@ -102,46 +102,98 @@ HashTable<Key,T>::~HashTable() {
 
 template <class Key, class T>
 unsigned long HashTable<Key,T>::calcIndex(Key k){	
-	return hash(k)%backingArraySize;
+	//Use the hash function and then linear probe until a space is allocated
+    //for use by a new key
+    unsigned long index = hash(k)%backingArraySize;
+    unsigned long indexStart = index;
+    
+    do {
+        if(backingArray[index].isNull || backingArray[index].k == k) {
+            return index;
+        }
+        index = (++index)%backingArraySize;
+    } while(index != indexStart);
+    
+    return indexStart;
 }
 
 template <class Key, class T>
 void HashTable<Key,T>::add(Key k, T x){
-	if((numItems+numRemoved) >= backingArray/2) {
+    if((numItems+numRemoved) >= backingArraySize/2) {
 		grow();
 	}
     
-    int index = calcIndex(k);
+    unsigned long index = calcIndex(k);
 
-	//TODO
     
-    numItems++;
+	if(backingArray[index].isDel || backingArray[index].isNull) {
+        backingArray[index].k = k;
+        backingArray[index].x = x;
+        numItems++;
+    }
+    else if(numItems < backingArraySize) {
+        while(!backingArray[index].isDel && !backingArray[index].isNull) {
+            index = (++index)%backingArraySize;
+            if(backingArray[index].isDel) {
+                backingArray[index].k = k;
+                backingArray[index].x = x;
+                numRemoved--;
+            }
+            else if(backingArray[index].isNull) {
+                backingArray[index].k = k;
+                backingArray[index].x = x;
+            }
+            else if(backingArray[index].k == k) {
+                backingArray[index].x = x;
+            }
+        }
+        numItems++;
+    }
 }
 
 template <class Key, class T>
 void HashTable<Key,T>::remove(Key k){
-	int index = calcIndex(k);
+	unsigned long index = calcIndex(k);
     
     if(numItems == 0) {
-        throw std::string("In remove(), attempted to remove from an empty hash table");
+        throw std::string("In remove(), attempted to remove from an empty hash table.");
     }
-    
-    //TODO
-
-    numItems--;
+    if(keyExists(k)) {
+        backingArray[index].isDel = true;
+        numItems--;
+        numRemoved++;
+    }
 }
 
 template <class Key, class T>
 T HashTable<Key,T>::find(Key k){
-	//TODO
-	T dummy;
-	return dummy;
+	//T dummy;
+	//return dummy;
+    
+    if(keyExists(k)) {
+        return backingArray[calcIndex(k)].x;
+    }
+    else {
+        throw std::string("In find(), Key parameter does not exist in hash table.");
+    }
 }
 
 template <class Key, class T>
 bool HashTable<Key,T>::keyExists(Key k){
-	//TODO
-	return false;
+	unsigned long index = calcIndex(k);
+    
+    if(backingArray[index].k == k && !backingArray[index].isDel &&
+       backingArray[index].isNull) {
+        return true;
+    }
+    else if(!backingArray[index].isDel || !backingArray[index].isNull) {
+        while(!backingArray[index].isDel || !backingArray[index].isNull) {
+            ++index;
+            if(backingArray[index].k == k) { return true; }
+        }
+    }
+    
+    return false;
 }
 
 template <class Key, class T>
@@ -151,10 +203,17 @@ unsigned long HashTable<Key,T>::size(){
 
 template <class Key, class T>
 void HashTable<Key,T>::grow(){
-	//TODO
-	primeCounter++;
-	HashRecord*
+    int currSize = backingArraySize;
+    backingArraySize = hashPrimes[++primeCounter];
+	HashRecord* tempArray = backingArray;
+    backingArray = new HashRecord[backingArraySize];
+    
+    for(int index = 0; index < currSize; index++) {
+        if(!tempArray[index].isNull && !tempArray[index].isDel) {
+            add(tempArray[index].k, tempArray[index].x);
+        }
+    }
 
-	//Call your add() method
+	delete[] tempArray;
 }
 

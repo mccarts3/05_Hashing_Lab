@@ -1,12 +1,12 @@
-open#include "hashPrimes.h"
-
-//declare hash() before including "HashTable.h"
-unsigned long hash(std::string k);
-
-#include "HashTable.h"
+#include "hashPrimes.h"
 #include <string>
 #include <iostream>
 #include <sstream>
+
+//declare hash() before including "HashTable.h"
+unsigned long hash(std::string);
+
+#include "HashTable.h"
 
 /**
  * This is a hash function for strings, based on Horner's method. See
